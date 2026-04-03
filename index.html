@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculadora USD a MXN</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>💵 Convertidor USD a MXN</h1>
+    
+    <div class="card">
+        <label for="usd">Cantidad en dólares (USD):</label>
+        <input type="number" id="usd" placeholder="Ej: 10">
+
+        <button onclick="convertir()">Convertir</button>
+
+        <p id="resultado"><br>Resultado: $0 MXN</br></p>
+        <div id="mensaje-tasa">💡 Recuerda: la tasa de cambio varía constantemente y puede cambiar en cada conversión, todo es valor aproximdado a la tasa actual.</div>
+    </div>
+</div>
+
+<script>
+async function convertir() {
+    // Tomar valor del input y convertir a número
+    let usd = parseFloat(document.getElementById("usd").value);
+
+    if (isNaN(usd)) {
+        alert("Ingresa una cantidad válida");
+        return;
+    }
+
+    try {
+        // Pedir tasa actual
+        let respuesta = await fetch("https://open.er-api.com/v6/latest/USD");
+        let data = await respuesta.json();
+
+        if (data.result !== "success") {
+            throw new Error("API falló");
+        }
+
+        let tasa = data.rates.MXN;
+
+        // Redondear la tasa a 2 decimales para que la multiplicación coincida
+
+        let tasaRedondeada = parseFloat(tasa.toFixed(2));
+
+        let mxn = usd * tasaRedondeada;
+
+        // Formatear cantidad y tasa con comas y 2 decimales
+
+        let mxnFormateado = mxn.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        let tasaFormateada = tasaRedondeada.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+        document.getElementById("resultado").innerText =
+            `Resultado: $${mxnFormateado} MXN 
+            (Tasa: ${tasaFormateada})`;
+
+    } catch (error) {
+        console.error(error);
+        alert("Error al obtener el tipo de cambio");
+    }
+}
+</script>
+</body>
+</html>
